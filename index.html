@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script
+            src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
+
+
+</head>
+<body>
+<select class="select2" style="width: 100%;"></select>
+<button onclick="getSelectedData()">Click</button>
+</body>
+<script>
+    $(document).ready(function () {
+        $("select.select2").select2({
+            minimumInputLength: 0,
+            allowClear: true,
+            ajax: {
+                url: "http://localhost:8081/getPageData",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                dataType: 'json',
+                delay:500,// wait 500 milliseconds before triggering the request
+                data: (params) => {
+                    debugger
+                    let currentPage =  params.page===undefined?1:params.page;
+                    console.log(currentPage)
+                    return {
+                        searchData: params.term, //searchable text
+                        page: params.page || 1
+                    }
+                },
+                processResults: (data, params) => {
+                    debugger
+                    console.log(data)
+                    const results = data.content.map(item => {
+                        return {
+                            id: item.id,//this will treat as value
+                            text: item.name//This will be treat as data
+                        };
+                    });
+                    return {
+                        results: results,
+                        pagination: {
+                            /*https://select2.org/data-sources/ajax*/
+                            more: ((params.page||1) * 10) < data.totalElements//*per page we get 10 data here....this is actual logic*/
+                            // more: 45//*test*/
+                        }
+                    }
+                },
+            },
+        });
+    })
+
+    function getSelectedData() {
+        let value = $("select.select2").val();
+        alert(value)
+    }
+</script>
+</html>
